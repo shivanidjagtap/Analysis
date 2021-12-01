@@ -1,0 +1,173 @@
+# All the libraries are installed here 
+#install.packages("dplyr")
+#install.packages("plyr")
+#install.packages("tidyr")
+#install.packages("tidyverse")
+#install.packages("ggplot2")
+#install.packages("ggpubr")
+#install.packages("rmarkdown")
+#install.packages("gmodels")
+#install.packages("plotly")
+
+library(plotly)
+library(gmodels)
+library(dplyr)
+library(tidyr)
+library(plyr)
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(rmarkdown)
+
+## Import the file into R using the read.csv( ) function 
+Baseline_survey <- as.data.frame(read.csv(file = "/Users/shiva/Documents/R/ALY 6010 R Project/Baseline survey.csv"))
+Baseline_survey
+
+## created a new dataset, so that wont affect original dataset
+New_Baseline_survey <- Baseline_survey
+head(New_Baseline_survey ) 
+
+## Below are the Unique Values in all the columns:
+lapply(New_Baseline_survey[,2:13], unique)
+
+##  Here we will Replaced <Unanswered>data into NA and converted the Answers into the respective format(character,numeric)
+New_Baseline_survey$Answer1 <- as.character(gsub('<Unanswered>',NA,New_Baseline_survey$Answer1))
+New_Baseline_survey$Answer2 <- as.numeric(gsub('<Unanswered>',NA,New_Baseline_survey$Answer2))
+New_Baseline_survey$Answer3 <- round(as.numeric(gsub('<Unanswered>',NA,New_Baseline_survey$Answer3)),2)
+New_Baseline_survey$Answer4 <- round(as.numeric(gsub('<Unanswered>',NA,New_Baseline_survey$Answer4)),2)
+New_Baseline_survey$Answer5 <- as.numeric(gsub('<Unanswered>',NA,New_Baseline_survey$Answer5))
+New_Baseline_survey$Answer6 <- as.numeric(gsub('<Unanswered>',NA,New_Baseline_survey$Answer6))
+New_Baseline_survey$Answer7 <- as.numeric(gsub('<Unanswered>',NA,New_Baseline_survey$Answer7))
+New_Baseline_survey$Answer8 <- round(as.numeric(gsub('<Unanswered>',NA,New_Baseline_survey$Answer8)),0)
+New_Baseline_survey$Answer9 <- as.numeric(gsub('<Unanswered>',NA,New_Baseline_survey$Answer9))
+New_Baseline_survey
+
+## Now after replacing the data there are some more raw data with special characters and numbers, lets convert it to NA
+New_Baseline_survey$Answer5 <- as.numeric(gsub('[^0-9.]',
+                                  "",
+                                  as.numeric(New_Baseline_survey$Answer5)))
+New_Baseline_survey$Answer6 <- round(as.numeric(gsub('[^0-9.]',
+                                  NA,
+                                  as.numeric(New_Baseline_survey$Answer6))),0)
+New_Baseline_survey$Answer7 <- round(as.numeric(gsub('[^0-9.]',
+                                  NA,
+                                 as.numeric(New_Baseline_survey$Answer7))),0)
+New_Baseline_survey$Answer9 <- as.numeric(gsub('[^0-9.]',
+                                  NA,
+                                 as.numeric(New_Baseline_survey$Answer9)))
+
+New_Baseline_survey$Answer5 <-  ifelse(between(New_Baseline_survey$Answer5,1,5), New_Baseline_survey$Answer5, NA)
+New_Baseline_survey$Answer6 <-  ifelse(between(New_Baseline_survey$Answer6,1,5), New_Baseline_survey$Answer6, NA)
+New_Baseline_survey$Answer7 <-  ifelse(between(New_Baseline_survey$Answer7,1,5), New_Baseline_survey$Answer7, NA)
+New_Baseline_survey$Answer8 <-  ifelse(between(New_Baseline_survey$Answer8,1,5), New_Baseline_survey$Answer8, NA)
+New_Baseline_survey$Answer9 <-  ifelse(between(New_Baseline_survey$Answer9,1,5), New_Baseline_survey$Answer9, NA)
+New_Baseline_survey
+
+## There where some floting values, by using round operater lets roundup the values
+New_Baseline_survey$Answer3 <- round(as.numeric(gsub(' ',NA,New_Baseline_survey$Answer3)),2)
+New_Baseline_survey$Answer4 <- round(as.numeric(gsub(' ',NA,New_Baseline_survey$Answer4)),2)
+New_Baseline_survey$Answer6 <- round(as.numeric(gsub(' ',NA,New_Baseline_survey$Answer6)),2)
+New_Baseline_survey$Answer8 <- round(as.numeric(gsub(' ',NA,New_Baseline_survey$Answer8)),2)
+New_Baseline_survey$Answer7 <- round(as.numeric(gsub(' ',NA,New_Baseline_survey$Answer7)),2)
+New_Baseline_survey
+
+## The repetative values in Questions column does not make sense so lets filter the Question values.
+New_Baseline_survey_Question <- c(as.character(New_Baseline_survey$Question1[1])
+, as.character(New_Baseline_survey$Question2[1])
+, as.character(New_Baseline_survey$Question3[1])
+, as.character(New_Baseline_survey$Question4[1])
+, as.character(New_Baseline_survey$Question5[1])
+, as.character(New_Baseline_survey$Question6[1])
+, as.character(New_Baseline_survey$Question7[1])
+, as.character(New_Baseline_survey$Question8[1])
+, as.character(New_Baseline_survey$Question9[1]))
+New_Baseline_survey_Question
+
+## We can see the 5th column consists of question and the 6th column contains the answer to that question. So we will be renaming the 6th column with the question in column 5th and so on do the same to rest of columns in this dataset.
+names(New_Baseline_survey)[6] <-  New_Baseline_survey_Question[1]
+names(New_Baseline_survey)[8] <-  New_Baseline_survey_Question[2]
+names(New_Baseline_survey)[10] <- New_Baseline_survey_Question[3]
+names(New_Baseline_survey)[12] <- New_Baseline_survey_Question[4]
+names(New_Baseline_survey)[14] <- New_Baseline_survey_Question[5]
+names(New_Baseline_survey)[16] <- New_Baseline_survey_Question[6]
+names(New_Baseline_survey)[18] <- New_Baseline_survey_Question[7]
+names(New_Baseline_survey)[20] <- New_Baseline_survey_Question[8]
+names(New_Baseline_survey)[22] <- New_Baseline_survey_Question[9]
+New_Baseline_survey
+
+## Finally we have successfully renamed the columns as we need. 
+## Now lets drop the columns which have the question in them as we don't need those.
+New_Baseline_survey <-  dplyr::select(New_Baseline_survey, 
+                                  -Question1,
+                                  -Question2,
+                                  -Question3,
+                                  -Question4,
+                                  -Question5,
+                                  -Question6,
+                                  -Question7,
+                                  -Question8,
+                                  -Question9)
+New_Baseline_survey
+
+##  After removed the unnecessary columns.If you see,still the column names have values and brackets in it, lets make them more preside to use
+names(New_Baseline_survey)[9] <- "Programming R"
+names(New_Baseline_survey)[10] <- "Central Tendency"
+names(New_Baseline_survey)[11] <- "Measures of Variability"
+names(New_Baseline_survey)[12] <- "Bivariate Concepts"
+names(New_Baseline_survey)[13] <- "Probabilities and distributions"
+New_Baseline_survey
+
+## Created a Table for Term
+Term_table = table(New_Baseline_survey$Term)
+Term_table
+
+## Created a Table for Class
+Class_table = table(New_Baseline_survey$Class)
+Class_table
+
+##  Created a Frequency Table for Answer 1
+Freq_Answer1_table = ftable(Baseline_survey$Answer1)
+Freq_Answer1_table
+
+## Created a Frequency Table for Term
+Freq_Term_table = ftable(Baseline_survey$Term)
+Freq_Term_table
+
+## Created a Cross Tabulations between Class and Term
+CrossTable(New_Baseline_survey$Term, New_Baseline_survey$Class, prob.t = TRUE)
+
+## Created a Cross Tabulations between Undergraduation Major and Age
+CrossTable(New_Baseline_survey$`What is your undergraduate major?`,New_Baseline_survey$`What is your age?`, prob.t = TRUE)
+
+## Lets Plot a histogram to check the Age count
+hist(New_Baseline_survey$`What is your age?`, freq = TRUE,
+     ylim = c(0,50),
+     main = "Age Group",
+     xlab = "Age",
+     las = 1,
+     col = "Light Blue"
+     )
+
+## Lets Plot a barplot with the help of ggplot to check the Class count
+Class_df <-as.data.frame(table(New_Baseline_survey$Class))
+NewNames_Class <- c('Class', 'Count')
+names(Class_df) <- NewNames_Class
+Class <-ggplot(data=Class_df, aes(x=Class, y=Count)) +
+geom_bar(stat="identity",fill = "light Blue") +
+geom_text(aes(label=Count), vjust=-1)+
+coord_cartesian(ylim=c(0,40))
+Class +theme(axis.text.x= element_text(angle=-0)) + labs(title="Class count")
+
+## Lets Plot a Ploty boxplot to check the Term as per Central Tendency count
+fig <- plot_ly(ggplot2::diamonds, x = New_Baseline_survey$Term, y =New_Baseline_survey$`Central Tendency` , type = "box")
+fig <- fig %>% layout(title = "Term as per Central Tendency")
+fig
+
+## Lets plot a boxplot which consist of each class has how many age group present
+ggplot(New_Baseline_survey,aes(x=as.factor(Class), fill= as.factor(`What is your age?`))) +geom_bar() +  labs(title= "Age of the students according to Class") + labs(x="Class")+ labs(fill ="AGE")
+
+## Lets Plot a barplot to check the count Undergraduation Majors according to the Class
+ggplot(New_Baseline_survey,aes(x=as.factor(`What is your undergraduate major?`), fill= as.factor(Class))) +geom_bar()+labs(title= "Undergraduation Majors according to the Class") +labs(x= "Undergraduate Major")+labs(fill ="Class") + theme(axis.text.x=element_text(angle=90)) + scale_fill_brewer(palette="Blues")
+
+
+ 
