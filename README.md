@@ -1,2 +1,1 @@
-# Analysis
-R analysis
+# R analysis
